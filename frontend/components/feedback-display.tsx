@@ -12,9 +12,9 @@ export function FeedbackDisplay({
 }) {
   const { stopSpeaking, isAISpeaking, audioInstance } = useInterviewStore();
   return (
-    <div className=" w-fit max-w-[90%]">
+    <div className="w-fit max-w-[90%]">
       <div className="flex items-center gap-2 mb-1">
-        <div className="sm:w-8 sm:h-8 w-6 h-6 flex items-center justify-center bg-[#FEFBED] rounded-sm">
+        <div className="sm:w-8 sm:h-8 w-6 h-6 flex items-center justify-center bg-yellow-500/20 rounded-sm border border-yellow-500/30">
           <Image
             src="/assets/images/bulb.png"
             alt="bulb"
@@ -23,13 +23,13 @@ export function FeedbackDisplay({
             className="sm:w-6 sm:h-6 w-4 h-4"
           />
         </div>
-        <p className="text-sm sm:text-base font-semibold">Immediate Feedback</p>
+        <p className="text-sm sm:text-base font-semibold text-white">Immediate Feedback</p>
 
         {isLastMessage && isAISpeaking && (
           <div className="flex items-center gap-1.5">
             <Button
               variant="ghost"
-              className="flex items-center gap-2 px-2 py-1 h-fit text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted rounded-md transition cursor-pointer"
+              className="flex items-center gap-2 px-2 py-1 h-fit text-sm font-medium text-gray-400 hover:text-white hover:bg-white/10 rounded-md transition cursor-pointer"
               onClick={stopSpeaking}
             >
               <div className="relative w-4 h-4 flex items-center justify-center">
@@ -40,12 +40,12 @@ export function FeedbackDisplay({
                   height={16}
                   className="sm:w-4 sm:h-4 w-3 h-3 z-10"
                 />
-                <div className="absolute w-4 h-4 sm:w-6 sm:h-6 bg-[#3B64F6] opacity-50 rounded-full animate-ping" />
+                <div className="absolute w-4 h-4 sm:w-6 sm:h-6 bg-blue-500 opacity-50 rounded-full animate-ping" />
               </div>
               <span>Skip Audio</span>
             </Button>
             {!audioInstance && (
-              <p className="text-sm text-muted-foreground italic hidden sm:flex">
+              <p className="text-sm text-gray-400 italic hidden sm:flex">
                 Generating audio...
               </p>
             )}
@@ -53,9 +53,11 @@ export function FeedbackDisplay({
         )}
       </div>
       <div
-        className={`px-3 py-2 sm:p-6  border-l-4 border-[#FFC342] rounded-2xl text-sm  leading-relaxed bg-[#FFF5EA]`}
+        className="px-3 py-2 sm:p-6 border-l-4 border-yellow-500 rounded-2xl text-sm leading-relaxed bg-yellow-500/10 backdrop-blur-sm"
       >
-        <ReactMarkdown>{feedback}</ReactMarkdown>
+        <div className="text-white prose-sm">
+          <ReactMarkdown>{feedback}</ReactMarkdown>
+        </div>
       </div>
     </div>
   );

@@ -15,8 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "AI Interview Model",
-  description: "Development of AI Interview Model by Adib Khan",
+  title: "NexusPrep | AI Interview Mastery",
+  description: "Master your interview skills with NexusPrep AI - The future of career preparation.",
   icons: {
     apple: "/apple-touch-icon.png",
     icon: [
@@ -34,14 +34,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className="dark">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased h-screen w-screen flex flex-col 
-        
-        `}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased h-screen w-screen flex flex-col bg-background text-foreground selection:bg-primary/20`}
       >
         <Header />
-        <main className="flex-1 flex flex-col">{children}</main>
+        <main className="flex-1 flex flex-col overflow-x-hidden relative">
+          <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))] opacity-20 pointer-events-none" />
+          {children}
+        </main>
         <Toaster />
       </body>
     </html>

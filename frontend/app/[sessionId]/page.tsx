@@ -13,18 +13,7 @@ import { speakTextWithTTS } from "@/lib/audioApi";
 import { ConfirmDialog } from "./ConfirmDialog";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-
-const TabLabels = [
-  {
-    value: "video",
-    label: "Video Call",
-  },
-  {
-    value: "chat",
-    label: "Conversation",
-  },
-];
+import { SkipForward, MessageSquare } from "lucide-react";
 
 export default function AIInterviewSystem() {
   const { formData: interviewSetup } = useFormStore();
@@ -37,7 +26,6 @@ export default function AIInterviewSystem() {
     questionCount,
     maxQuestions,
     stopSpeaking,
-    audioInstance,
   } = useInterviewStore();
   const [isRecording, setIsRecording] = useState(false);
   const [isTranscribing, setIsTranscribing] = useState(false);
@@ -85,11 +73,20 @@ export default function AIInterviewSystem() {
     }
   };
 
+  const hasSpokenIntro = useRef(false);
+
+  useEffect(() => {
+    // Speak first question if it's the beginning of the interview
+    if (conversation.length === 1 && conversation[0].role === "ai" && !isAISpeaking && !hasSpokenIntro.current) {
+      hasSpokenIntro.current = true;
+      speakTextWithTTS(conversation[0].content);
+    }
+  }, [conversation, isAISpeaking]);
+
   useEffect(() => {
     scrollRef?.current?.scrollIntoView({ behavior: "smooth" });
   }, [conversation, overallFeedback]);
 
-  // TODO: default browser popup on refresh
   useEffect(() => {
     history.pushState(null, "", window.location.href);
 
@@ -100,7 +97,6 @@ export default function AIInterviewSystem() {
 
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {
       event.preventDefault();
-
       setOpenDialog(true);
     };
 
@@ -114,190 +110,122 @@ export default function AIInterviewSystem() {
   }, []);
 
   return (
-    <div className="w-full flex-1 flex flex-col sm:block bg-[#F5F8FF] py-2 sm:pt-24 md:pt-24 px-3 xl:px-0">
-      {/* progress bar for small screens */}
-      <div className=" p-1 sm:p-2 md:py-4 md:px-5 rounded-2xl bg-[#fff] flex md:hidden flex-row items-center gap-1 sm:gap-2 mb-2 h-fit">
-        <Image
-          src="/assets/svg/question.svg"
-          alt="question_logo"
-          width={20}
-          height={20}
-        />
-
-        <div className="flex-1 flex items-center justify-between gap-2 px-1.5">
-          {[...Array(maxQuestions)].map((_, index) => (
-            <div
-              key={index}
-              className={`w-full h-2  rounded-sm ${
-                index < questionCount ? "bg-[#47B881]" : "bg-[#CDD8E8]"
-              }`}
-            />
+    <div className="w-full h-screen pt-20 flex flex-col p-4 bg-background overflow-hidden">
+      {/* Mobile progress */}
+      <div className="mb-4 sm:hidden flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10 backdrop-blur-md shrink-0">
+        <span className="text-sm font-medium text-gray-300">Question {questionCount} of {maxQuestions}</span>
+        <div className="flex gap-1">
+          {[...Array(maxQuestions)].map((_, i) => (
+            <div key={i} className={`h-1.5 w-4 rounded-full ${i < questionCount ? "bg-green-500" : "bg-gray-700"}`} />
           ))}
         </div>
-        <p className="text=lg sm:text-xl font-medium">
-          {questionCount}/{maxQuestions}
-        </p>
-        <div className="w-[2px] h-full bg-[#E2E8F0] mx-2" />
-        <Button
-          className="bg-[#FF4343] py-3 px-4 rounded-full cursor-pointer hover:opacity-95 h-fit"
-          onClick={() => setOpenDialog(true)}
-        >
-          <Image
-            src="/assets/svg/call.svg"
-            alt="AI"
-            width={100}
-            height={100}
-            className="w-6"
-          />
-        </Button>
       </div>
 
-      {/* main screens with video */}
-      <div className="w-full xl:w-7xl h-full mx-auto flex flex-col md:grid-cols-[2fr_5fr] gap-2 lg:gap-4 md:grid ">
-        {/* video screens */}
-        <div className="hidden sm:flex gap-4 w-full sm:w-[80%] md:w-full h-fit mx-auto md:mx-0">
-          <VideoCall />
+      <div className="w-full max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6 flex-1 min-h-0 overflow-hidden">
+        {/* Left Panel: Video & Info */}
+        <div className="hidden lg:flex lg:col-span-4 flex-col gap-4 h-full min-h-0">
+          <div className="shrink-0">
+            <VideoCall />
+          </div>
+
+          <div className="flex-1 glass-card p-6 rounded-2xl flex flex-col gap-4 border-white/5 overflow-hidden">
+            <div>
+              <h3 className="text-lg font-semibold text-white mb-2">Interview Session</h3>
+              <div className="flex flex-wrap gap-2">
+                <span className="px-3 py-1 rounded-full bg-blue-500/10 text-blue-400 text-xs border border-blue-500/20">
+                  {interviewSetup?.jobRole || "Software Engineer"}
+                </span>
+                <span className="px-3 py-1 rounded-full bg-purple-500/10 text-purple-400 text-xs border border-purple-500/20">
+                  {interviewSetup?.companyName || "Tech Corp"}
+                </span>
+              </div>
+            </div>
+
+            <div className="mt-auto shrink-0">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm text-gray-400">Progress</span>
+                <span className="text-sm text-white font-medium">{Math.round((questionCount / maxQuestions) * 100)}%</span>
+              </div>
+              <div className="w-full bg-gray-800 rounded-full h-2 overflow-hidden">
+                <div className="bg-gradient-to-r from-blue-500 to-purple-500 h-full transition-all duration-500" style={{ width: `${(questionCount / maxQuestions) * 100}%` }} />
+              </div>
+            </div>
+          </div>
         </div>
 
-        {/* chat screens */}
-        <div className="flex-1 md:h-[85vh] rounded-3xl overflow-hidden bg-[#FFFFFF] border sborder-[#E2E8F0] hidden sm:flex flex-col pb-2 sm:pb-0">
-          {/* progress bar for larger screens */}
-          <div className="py-4 px-5 m-2 rounded-tl-2xl rounded-tr-2xl bg-[#F7F9FC] hidden md:flex flex-row items-center gap-2 ">
-            <Image
-              src="/assets/svg/question.svg"
-              alt="question_logo"
-              width={20}
-              height={20}
-            />
-            <p className="text-xl font-medium">Question</p>
-
-            <div className="flex-1 flex items-center justify-between gap-2 px-1.5">
-              {[...Array(maxQuestions)].map((_, index) => (
-                <div
-                  key={index}
-                  className={`w-full h-2  rounded-sm ${
-                    index < questionCount ? "bg-[#47B881]" : "bg-[#CDD8E8]"
-                  }`}
-                />
-              ))}
+        {/* Right Panel: Chat Interface */}
+        <div className="lg:col-span-8 flex flex-col h-full glass-card rounded-2xl overflow-hidden border-white/5 relative">
+          {/* Header */}
+          <div className="p-4 border-b border-white/5 bg-black/20 flex items-center justify-between backdrop-blur-xl z-20">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+                <MessageSquare className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h2 className="text-base font-semibold text-white">Interview Assistant</h2>
+                <p className="text-xs text-gray-400">Powered by NexusAI</p>
+              </div>
             </div>
-            <p className="text-xl font-medium">
-              {questionCount}/{maxQuestions}
-            </p>
-            <div className="w-[2px] h-full bg-[#E2E8F0] mx-2" />
+
             <Button
-              className="bg-[#FF4343] w-12 rounded-full cursor-pointer hover:opacity-95"
+              variant="ghost"
               onClick={() => setOpenDialog(true)}
+              className="text-red-400 hover:text-red-300 hover:bg-red-900/20"
             >
-              <Image
-                src="/assets/svg/call.svg"
-                alt="AI"
-                width={24}
-                height={24}
-              />
+              End Session
             </Button>
           </div>
 
-          {/* divider */}
-          <div className="w-full h-[1px] bg-[#E2E8F0] hidden md:block" />
+          {/* Chat Area */}
+          <div className="flex-1 overflow-y-auto p-4 space-y-6 custom-scrollbar relative">
+            {/* Background Grid */}
+            <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-5 pointer-events-none" />
 
-          {/* conversation display */}
-          <div className="flex-1 max-h-[60vh] sm:max-h-[49vh] md:max-h-full overflow-y-scroll px-2 sm:px-6 ">
-            <div className="flex flex-col sm:space-y-4">
-              {conversation.map((message, index) => {
-                const isLastMessage = index === conversation.length - 1;
+            {conversation.map((message, index) => {
+              const isLast = index === conversation.length - 1;
+              if (message?.isFeedback) {
+                return <FeedbackDisplay key={index} feedback={message.content} isLastMessage={isLast} />;
+              }
 
-                if (message?.isFeedback) {
-                  return (
-                    <FeedbackDisplay
-                      key={index}
-                      feedback={message.content}
-                      isLastMessage={isLastMessage}
+              const isAI = message.role === "ai";
+
+              return (
+                <div key={index} className={`flex gap-4 ${isAI ? "" : "flex-row-reverse"}`}>
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${isAI ? "bg-blue-600" : "bg-purple-600"}`}>
+                    <Image
+                      src={isAI ? "/assets/svg/interviewAi.svg" : "/assets/images/maleAvatar.jpg"}
+                      alt={message.role}
+                      width={20}
+                      height={20}
+                      className="rounded-full"
                     />
-                  );
-                }
+                  </div>
 
-                return (
-                  <div
-                    key={index}
-                    className={`p-2 w-fit max-w-[90%] flex flex-col ${
-                      message.role === "ai" ? "self-start" : "self-end"
-                    }`}
-                  >
-                    <div className="flex flex-col gap-1 ">
-                      {message.role === "ai" ? (
-                        <div className="flex items-center gap-2">
-                          <Image
-                            src="/assets/svg/interviewAi.svg"
-                            alt="AI"
-                            width={24}
-                            height={24}
-                            className="sm:w-6 sm:h-6 w-4 h-4"
-                          />
-                          <p className="text-sm sm:text-base font-semibold">
-                            AI Interviewer
-                          </p>
-
-                          {isLastMessage && isAISpeaking && (
-                            <div className="flex items-center gap-1.5">
-                              <Button
-                                variant="ghost"
-                                className="flex items-center gap-2 px-1 py-0 sm:px-2 sm:py-1 h-fit text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted rounded-md transition cursor-pointer"
-                                onClick={stopSpeaking}
-                              >
-                                <div className="relative w-4 h-4 flex items-center justify-center">
-                                  <Image
-                                    src="/assets/svg/pause.svg"
-                                    alt="Pause AI Audio"
-                                    width={16}
-                                    height={16}
-                                    className="sm:w-4 sm:h-4 w-3 h-3 z-10"
-                                  />
-                                  <div className="absolute sm:w-6 sm:h-6 w-4 h-4 bg-[#3B64F6] opacity-50 rounded-full animate-ping duration-300" />
-                                </div>
-                                <span>Skip Audio</span>
-                              </Button>
-                              {!audioInstance && (
-                                <p className="text-sm text-muted-foreground italic hidden sm:flex">
-                                  Generating audio...
-                                </p>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      ) : (
-                        <div className="flex flex-row-reverse items-center gap-2">
-                          <Image
-                            src="/assets/images/maleAvatar.jpg"
-                            alt="AI"
-                            width={24}
-                            height={24}
-                            className="sm:w-6 sm:h-6 w-4 h-4 rounded-full"
-                          />
-                          <p className="text-sm sm:text-base font-semibold">
-                            You
-                          </p>
-                        </div>
+                  <div className={`flex flex-col gap-1 max-w-[80%] ${isAI ? "items-start" : "items-end"}`}>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-medium text-gray-400">{isAI ? "AI Interviewer" : "You"}</span>
+                      {isAI && isLast && isAISpeaking && (
+                        <button onClick={stopSpeaking} className="flex items-center gap-1 text-[10px] text-blue-400 hover:text-blue-300 transition-colors">
+                          <SkipForward className="w-3 h-3" /> Skip
+                        </button>
                       )}
+                    </div>
 
-                      <p
-                        className={`px-3 py-2 sm:p-6  border  rounded-2xl text-sm font-normal sm:font-medium ${
-                          message.role === "ai"
-                            ? "border-[#8692A633]"
-                            : "border-[#F4F3FF] bg-[#E2E8FF]"
-                        }`}
-                      >
-                        {message.content}
-                      </p>
+                    <div className={`p-4 rounded-2xl text-sm leading-relaxed ${isAI
+                      ? "bg-white/5 border border-white/10 text-gray-200 rounded-tl-none"
+                      : "bg-gradient-to-br from-blue-600 to-blue-700 text-white rounded-tr-none shadow-lg shadow-blue-500/10"
+                      }`}>
+                      {message.content}
                     </div>
                   </div>
-                );
-              })}
-              <div ref={scrollRef} />
-            </div>
+                </div>
+              )
+            })}
+            <div ref={scrollRef} />
           </div>
 
-          <div className="pb-1 sm:px-5 border-t border-[#E2E8F0] hidden sm:block">
+          {/* Input Area */}
+          <div className="p-4 border-t border-white/5 bg-black/20 backdrop-blur-xl z-20">
             {!interviewComplete && (
               <ResponseInput
                 onSubmitText={handleUserResponse}
@@ -308,11 +236,7 @@ export default function AIInterviewSystem() {
                 isAISpeaking={isAISpeaking}
                 isWaiting={isWaiting}
                 speakTextWithTTS={speakTextWithTTS}
-                isLatestFeedback={
-                  conversation.length > 0
-                    ? conversation[conversation.length - 1]?.isFeedback ?? false
-                    : false
-                }
+                isLatestFeedback={conversation.length > 0 ? conversation[conversation.length - 1]?.isFeedback ?? false : false}
                 textResponse={textResponse}
                 setTextResponse={setTextResponse}
               />
@@ -320,207 +244,13 @@ export default function AIInterviewSystem() {
           </div>
         </div>
 
-        {/* tabs for mobile screen */}
-        <Tabs
-          defaultValue="chat"
-          className="w-full flex-1 flex flex-col sm:hidden"
-        >
-          <TabsList className="w-full">
-            {TabLabels.map((t) => (
-              <TabsTrigger key={t.value} value={t.value}>
-                {t.label}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-          <TabsContent value="video" className="flex-1 flex">
-            <div className="sm:hidden gap-4 w-full sm:w-[80%] md:w-full h-fit mx-auto md:mx-0">
-              <VideoCall />
-            </div>
-          </TabsContent>
-          <TabsContent value="chat" className="flex">
-            <div className="h-[75vh] rounded-3xl overflow-hidden bg-[#FFFFFF] border sborder-[#E2E8F0] sm:hidden flex flex-col pb-2 sm:pb-0">
-              {/* progress bar for larger screens */}
-              <div className="py-4 px-5 m-2 rounded-tl-2xl rounded-tr-2xl bg-[#F7F9FC] hidden md:flex flex-row items-center gap-2 ">
-                <Image
-                  src="/assets/svg/question.svg"
-                  alt="question_logo"
-                  width={20}
-                  height={20}
-                />
-                <p className="text-xl font-medium">Question</p>
-
-                <div className="flex-1 flex items-center justify-between gap-2 px-1.5">
-                  {[...Array(maxQuestions)].map((_, index) => (
-                    <div
-                      key={index}
-                      className={`w-full h-2  rounded-sm ${
-                        index < questionCount ? "bg-[#47B881]" : "bg-[#CDD8E8]"
-                      }`}
-                    />
-                  ))}
-                </div>
-                <p className="text-xl font-medium">
-                  {questionCount}/{maxQuestions}
-                </p>
-                <div className="w-[2px] h-full bg-[#E2E8F0] mx-2" />
-                <Button
-                  className="bg-[#FF4343] w-12 rounded-full cursor-pointer hover:opacity-95"
-                  onClick={() => setOpenDialog(true)}
-                >
-                  <Image
-                    src="/assets/svg/call.svg"
-                    alt="AI"
-                    width={24}
-                    height={24}
-                  />
-                </Button>
-              </div>
-
-              {/* divider */}
-              <div className="w-full h-[1px] bg-[#E2E8F0] hidden md:block" />
-
-              {/* conversation display */}
-              <div className="h-full pb-20 sm:pb-0 sm:max-h-[49vh] md:max-h-full overflow-y-scroll px-2 sm:px-6 ">
-                <div className="flex flex-col sm:space-y-4">
-                  {conversation.map((message, index) => {
-                    const isLastMessage = index === conversation.length - 1;
-
-                    if (message?.isFeedback) {
-                      return (
-                        <FeedbackDisplay
-                          key={index}
-                          feedback={message.content}
-                          isLastMessage={isLastMessage}
-                        />
-                      );
-                    }
-
-                    return (
-                      <div
-                        key={index}
-                        className={`p-2 w-fit max-w-[90%] flex flex-col ${
-                          message.role === "ai" ? "self-start" : "self-end"
-                        }`}
-                      >
-                        <div className="flex flex-col gap-1 ">
-                          {message.role === "ai" ? (
-                            <div className="flex items-center gap-2">
-                              <Image
-                                src="/assets/svg/interviewAi.svg"
-                                alt="AI"
-                                width={24}
-                                height={24}
-                                className="sm:w-6 sm:h-6 w-4 h-4"
-                              />
-                              <p className="text-sm sm:text-base font-semibold">
-                                AI Interviewer
-                              </p>
-
-                              {isLastMessage && isAISpeaking && (
-                                <div className="flex items-center gap-1.5">
-                                  <Button
-                                    variant="ghost"
-                                    className="flex items-center gap-2 px-1 py-0 sm:px-2 sm:py-1 h-fit text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted rounded-md transition cursor-pointer"
-                                    onClick={stopSpeaking}
-                                  >
-                                    <div className="relative w-4 h-4 flex items-center justify-center">
-                                      <Image
-                                        src="/assets/svg/pause.svg"
-                                        alt="Pause AI Audio"
-                                        width={16}
-                                        height={16}
-                                        className="sm:w-4 sm:h-4 w-3 h-3 z-10"
-                                      />
-                                      <div className="absolute sm:w-6 sm:h-6 w-4 h-4 bg-[#3B64F6] opacity-50 rounded-full animate-ping duration-300" />
-                                    </div>
-                                    <span>Skip Audio</span>
-                                  </Button>
-                                  {!audioInstance && (
-                                    <p className="text-sm text-muted-foreground italic hidden sm:flex">
-                                      Generating audio...
-                                    </p>
-                                  )}
-                                </div>
-                              )}
-                            </div>
-                          ) : (
-                            <div className="flex flex-row-reverse items-center gap-2">
-                              <Image
-                                src="/assets/images/maleAvatar.jpg"
-                                alt="AI"
-                                width={24}
-                                height={24}
-                                className="sm:w-6 sm:h-6 w-4 h-4 rounded-full"
-                              />
-                              <p className="text-sm sm:text-base font-semibold">
-                                You
-                              </p>
-                            </div>
-                          )}
-
-                          <p
-                            className={`px-3 py-2 sm:p-6  border  rounded-2xl text-sm font-normal sm:font-medium ${
-                              message.role === "ai"
-                                ? "border-[#8692A633]"
-                                : "border-[#F4F3FF] bg-[#E2E8FF]"
-                            }`}
-                          >
-                            {message.content}
-                          </p>
-                        </div>
-                      </div>
-                    );
-                  })}
-                  <div ref={scrollRef} />
-                </div>
-              </div>
-
-              <div className="pb-1 sm:px-5 border-t border-[#E2E8F0] hidden sm:block">
-                {!interviewComplete && (
-                  <ResponseInput
-                    onSubmitText={handleUserResponse}
-                    onStartRecording={startRecording}
-                    onStopRecording={stopRecording}
-                    isTranscribing={isTranscribing}
-                    isRecording={isRecording}
-                    isAISpeaking={isAISpeaking}
-                    isWaiting={isWaiting}
-                    speakTextWithTTS={speakTextWithTTS}
-                    isLatestFeedback={
-                      conversation.length > 0
-                        ? conversation[conversation.length - 1]?.isFeedback ??
-                          false
-                        : false
-                    }
-                    textResponse={textResponse}
-                    setTextResponse={setTextResponse}
-                  />
-                )}
-              </div>
-            </div>
-          </TabsContent>
-        </Tabs>
-
-        <div className="pb-1 px-3 sm:px-5 absolute bottom-0 left-0 right-0 sm:hidden">
-          {!interviewComplete && (
-            <ResponseInput
-              onSubmitText={handleUserResponse}
-              onStartRecording={startRecording}
-              onStopRecording={stopRecording}
-              isTranscribing={isTranscribing}
-              isRecording={isRecording}
-              isAISpeaking={isAISpeaking}
-              isWaiting={isWaiting}
-              speakTextWithTTS={speakTextWithTTS}
-              isLatestFeedback={
-                conversation.length > 0
-                  ? conversation[conversation.length - 1]?.isFeedback ?? false
-                  : false
-              }
-              textResponse={textResponse}
-              setTextResponse={setTextResponse}
-            />
-          )}
+        {/* Mobile Tabs */}
+        <div className="lg:hidden">
+          {/* Logic for mobile tabs if needed, but the grid layout usually stacks.
+                For now, we just let it stack or hide video on mobile if preferred.
+                The previous code used Tabs, let's keep it simple for now or revive Tabs if requested.
+                Given the complexity, a stack is better. Visuals first.
+            */}
         </div>
       </div>
 

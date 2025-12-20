@@ -1,40 +1,30 @@
 "use client";
 import { useFormStore } from "@/lib/store/formStore";
 import { useInterviewStore } from "@/lib/store/interviewStore";
-import Image from "next/image";
 
 export default function Header() {
   const { formData } = useFormStore();
   const { interviewStarted } = useInterviewStore();
 
   return (
-    <header className="sm:fixed h-fit top-0 left-0 right-0 bg-white shadow-md z-50 border-[#E2E8F0] border-b">
-      <div className="w-full xl:w-7xl mx-auto flex flex-row-reverse items-center justify-between py-3 px-3 xl:px-0">
-        <Image
-          src="https://truscholar-assets-public.s3.ap-south-1.amazonaws.com/websiteimages/truscholar+new+logo.png"
-          alt="AI Interviewer"
-          width={192}
-          height={192}
-          className="w-24 sm:w-48"
-        />
-        {interviewStarted ? (
-          <div className="max-w-[70%] sm:max-w-none">
-            <h1 className="text-sm sm:text-2xl font-medium capitalize w-full truncate overflow-hidden whitespace-nowrap">
-              {formData.companyName} - {formData.jobRole} Interview
-            </h1>
+    <header className="fixed w-full top-0 z-50 transition-all duration-300 pointer-events-none">
+      <div className="absolute inset-0 bg-background/50 backdrop-blur-xl border-b border-white/10 pointer-events-auto" />
+      <div className="relative w-full max-w-7xl mx-auto flex items-center justify-between py-4 px-6 pointer-events-auto">
+        <div className="flex items-center gap-2 group cursor-pointer">
+          <div className="relative w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg shadow-purple-500/20 group-hover:shadow-purple-500/40 transition-all duration-300">
+            <span className="text-white font-bold text-lg">N</span>
           </div>
-        ) : (
-          <div className="flex items-center gap-3">
-            <Image
-              src="/AI-Interviewer.png"
-              alt="AI Interviewer"
-              width={56}
-              height={56}
-              className="rounded-full border-2 border-[#C5DAFF] bg-[#D9D9D9] w-8 sm:w-14"
-            />
-            <h1 className="text-xl sm:text-2xl font-medium capitalize">
-              <span className="text-blue-600">AI </span>Interview Preparation
-            </h1>
+          <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-white/70">
+            NexusPrep
+          </span>
+        </div>
+
+        {interviewStarted && (
+          <div className="hidden sm:flex items-center gap-3 px-4 py-1.5 rounded-full bg-white/5 border border-white/10">
+            <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+            <span className="text-sm font-medium text-gray-300">
+              {formData.companyName} • {formData.jobRole}
+            </span>
           </div>
         )}
       </div>

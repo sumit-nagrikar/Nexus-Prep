@@ -28,7 +28,6 @@ import {
 import ReactMarkdown from "react-markdown";
 import { getDomains, getRolesByDomainId } from "@/lib/jobsApi";
 import { getSkills } from "@/lib/api";
-import { Skeleton } from "./ui/skeleton";
 
 interface InterviewSetupFormProps {
   onSubmit: (data: InterviewSetupData) => void;
@@ -276,8 +275,8 @@ export function InterviewSetupForm({
 
   return (
     <div className="h-full w-full flex flex-col items-center justify-center gap-4 sm:gap-6 px-3 sm:px-0">
-      <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold">
-        <span className="text-[#3B64F6]">AI-Video</span> Interview Setup
+      <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500">
+        Setup Your Interview
       </h1>
 
       <div className="flex items-center space-x-4">
@@ -285,13 +284,12 @@ export function InterviewSetupForm({
           (step) => (
             <div key={step} className="flex items-center space-x-4">
               <div
-                className={`w-8 h-8 rounded-full flex items-center justify-center border-2 cursor-pointer ${
-                  steps === step
-                    ? "bg-[#E7ECFF] text-[#3B64F6] border-[#3B64F6]"
-                    : steps > step
-                    ? "bg-[#3B64F6] text-white border-[#3B64F6]"
-                    : "border-[#E2E8F0] text-gray-400"
-                }`}
+                className={`w-8 h-8 rounded-full flex items-center justify-center border transition-all duration-300 cursor-pointer ${steps === step
+                  ? "bg-primary text-primary-foreground border-primary shadow-[0_0_15px_rgba(59,100,246,0.5)]"
+                  : steps > step
+                    ? "bg-primary/50 text-white border-primary/50"
+                    : "border-white/10 text-gray-500 bg-white/5"
+                  }`}
                 onClick={() => {
                   if (steps > step) setSteps(step);
                 }}
@@ -300,9 +298,8 @@ export function InterviewSetupForm({
               </div>
               {step < (formData.interviewCategory === "HR" ? 2 : 3) && (
                 <div
-                  className={`h-0.5 w-12 ${
-                    steps > step ? "bg-[#3B64F6]" : "bg-[#E2E8F0]"
-                  }`}
+                  className={`h-0.5 w-12 transition-colors duration-300 ${steps > step ? "bg-primary/50" : "bg-white/10"
+                    }`}
                 />
               )}
             </div>
@@ -310,9 +307,9 @@ export function InterviewSetupForm({
         )}
       </div>
 
-      <Card className="w-full sm:w-md z-10">
+      <Card className="w-full sm:w-md z-10 glass-card border-none text-foreground">
         <CardHeader>
-          <CardTitle className="text-sm sm:text-base text-[#4F637E] text-center font-normal">
+          <CardTitle className="text-sm sm:text-base text-gray-400 text-center font-normal">
             {steps === 1 &&
               "Tell us which company you're targeting and the type of interview you're preparing for."}
             {steps === 2 &&
@@ -326,7 +323,7 @@ export function InterviewSetupForm({
               <div>
                 <Label
                   htmlFor="companyName"
-                  className="text-sm mb-1 sm:text-base text-black capitalize justify-between items-center"
+                  className="text-sm mb-2 sm:text-base text-gray-200 capitalize flex justify-between items-center"
                 >
                   Target Company
                   {formData.companyName.trim() && (
@@ -341,20 +338,20 @@ export function InterviewSetupForm({
                   id="companyName"
                   name="companyName"
                   ref={inputRef}
-                  placeholder="eg. TruScholar"
+                  placeholder="e.g. Google, Microsoft..."
                   value={formData.companyName}
                   onChange={handleChange}
                   minLength={3}
                   maxLength={maxCompanyNameLength}
                   required
-                  className="px-3 py-2 text-sm sm:text-base"
+                  className="px-3 py-2 text-sm sm:text-base bg-black/20 border-white/10 focus-visible:ring-primary/50 placeholder:text-gray-600"
                 />
               </div>
 
               <div>
                 <Label
                   htmlFor="interviewCategory"
-                  className="text-sm mb-1 sm:text-base text-black capitalize"
+                  className="text-sm mb-2 sm:text-base text-gray-200 capitalize block"
                 >
                   Interview Category
                 </Label>
@@ -365,7 +362,7 @@ export function InterviewSetupForm({
                   }
                 >
                   <SelectTrigger
-                    className="w-full text-sm sm:text-base"
+                    className="w-full text-sm sm:text-base bg-black/20 border-white/10 text-gray-200"
                     ref={categoryRef}
                   >
                     <SelectValue
@@ -373,12 +370,12 @@ export function InterviewSetupForm({
                       className="w-full text-sm sm:text-base"
                     />
                   </SelectTrigger>
-                  <SelectContent className="w-full">
+                  <SelectContent className="bg-black/90 border-white/10 text-gray-200">
                     {InterviewCategories.map((c) => (
                       <SelectItem
                         value={c.value}
                         key={c.value}
-                        className="cursor-pointer"
+                        className="cursor-pointer focus:bg-white/10 focus:text-white"
                       >
                         {c.label}
                       </SelectItem>
@@ -389,13 +386,13 @@ export function InterviewSetupForm({
 
               <Button
                 onClick={() => setSteps(2)}
-                className="text-base font-bold cursor-pointer"
+                className="w-full text-base font-bold cursor-pointer bg-primary hover:bg-primary/90 text-primary-foreground shadow-[0_0_20px_rgba(59,100,246,0.2)]"
                 disabled={
                   formData.companyName.length < 3 ||
                   formData.interviewCategory === ""
                 }
               >
-                Next
+                Next Step
               </Button>
             </div>
           )}
@@ -406,7 +403,7 @@ export function InterviewSetupForm({
                 <div>
                   <Label
                     htmlFor="domain"
-                    className="text-sm mb-1 sm:text-base text-black capitalize"
+                    className="text-sm mb-2 sm:text-base text-gray-200 capitalize block"
                   >
                     Select Domain
                   </Label>
@@ -420,14 +417,14 @@ export function InterviewSetupForm({
                     required={isDomainSpecific}
                   >
                     <SelectTrigger
-                      className="w-full text-sm sm:text-base"
+                      className="w-full text-sm sm:text-base bg-black/20 border-white/10 text-gray-200"
                       ref={domainRef}
                     >
                       <SelectValue placeholder="Select Domain" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="bg-black/90 border-white/10 text-gray-200 max-h-[300px]">
                       {domains?.map((domain) => (
-                        <SelectItem value={domain.domain} key={domain.id}>
+                        <SelectItem value={domain.domain} key={domain.id} className="focus:bg-white/10 focus:text-white">
                           {domain.domain}
                         </SelectItem>
                       ))}
@@ -437,7 +434,7 @@ export function InterviewSetupForm({
                 <div>
                   <Label
                     htmlFor="jobRole"
-                    className="text-sm mb-1 sm:text-base text-black capitalize"
+                    className="text-sm mb-2 sm:text-base text-gray-200 capitalize block"
                   >
                     Job Role
                   </Label>
@@ -449,15 +446,15 @@ export function InterviewSetupForm({
                     required={isDomainSpecific}
                   >
                     <SelectTrigger
-                      className="w-full text-sm sm:text-base"
+                      className="w-full text-sm sm:text-base bg-black/20 border-white/10 text-gray-200"
                       ref={jobRoleRef}
                       disabled={!formData.domain}
                     >
                       <SelectValue placeholder="Select Job Role" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="bg-black/90 border-white/10 text-gray-200 max-h-[300px]">
                       {jobRoles?.map((role, i) => (
-                        <SelectItem value={role} key={`role_${i}`}>
+                        <SelectItem value={role} key={`role_${i}`} className="focus:bg-white/10 focus:text-white">
                           {role}
                         </SelectItem>
                       ))}
@@ -467,10 +464,10 @@ export function InterviewSetupForm({
 
                 <Button
                   onClick={() => setSteps(3)}
-                  className="text-base font-bold cursor-pointer"
+                  className="w-full text-base font-bold cursor-pointer bg-primary hover:bg-primary/90 text-primary-foreground shadow-[0_0_20px_rgba(59,100,246,0.2)]"
                   disabled={formData.domain === "" || formData.jobRole === ""}
                 >
-                  Next
+                  Next Step
                 </Button>
               </div>
             ) : (
@@ -478,7 +475,7 @@ export function InterviewSetupForm({
                 <div>
                   <Label
                     htmlFor="interviewType"
-                    className="text-sm mb-1 sm:text-base text-black capitalize"
+                    className="text-sm mb-2 sm:text-base text-gray-200 capitalize block"
                   >
                     Select Interview Type
                   </Label>
@@ -490,14 +487,14 @@ export function InterviewSetupForm({
                     required={!isDomainSpecific}
                   >
                     <SelectTrigger
-                      className="w-full text-sm sm:text-base"
+                      className="w-full text-sm sm:text-base bg-black/20 border-white/10 text-gray-200"
                       ref={interviewTypeRef}
                     >
                       <SelectValue placeholder="Select Interview Type" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="bg-black/90 border-white/10 text-gray-200">
                       {interviewTypes.map((type) => (
-                        <SelectItem value={type.value} key={type.id}>
+                        <SelectItem value={type.value} key={type.id} className="focus:bg-white/10 focus:text-white">
                           {type.name}
                         </SelectItem>
                       ))}
@@ -506,7 +503,7 @@ export function InterviewSetupForm({
                 </div>
                 <Button
                   onClick={handleStartInterview}
-                  className="text-base font-bold cursor-pointer"
+                  className="w-full text-base font-bold cursor-pointer bg-gradient-to-r from-blue-600 to-purple-600 hover:opacity-90 transition-opacity"
                 >
                   {loading ? "Starting Interview..." : <p>Start Interview</p>}
                 </Button>
@@ -520,31 +517,31 @@ export function InterviewSetupForm({
                 onValueChange={(value) =>
                   handleSelectChange("inputType", value)
                 }
-                className="flex flex-col sm:flex-row gap-1 sm:gap-6"
+                className="flex flex-col sm:flex-row gap-4 sm:gap-6"
               >
-                <div className="flex items-center gap-2 cursor-pointer w-fit">
+                <div className="flex items-center gap-2 cursor-pointer w-fit p-2 rounded hover:bg-white/5 transition-colors">
                   <RadioGroupItem
                     value="skills-based"
                     id="skills-based"
-                    className="mb-2"
+                    className="border-white/20 text-primary"
                   />
                   <Label
                     htmlFor="skills-based"
-                    className="cursor-pointer text-sm mb-1 sm:mb-0 sm:text-base text-black capitalize"
+                    className="cursor-pointer text-sm sm:text-base text-gray-200 capitalize"
                   >
                     Add Skills
                   </Label>
                 </div>
 
-                <div className="flex items-center gap-2 cursor-pointer">
+                <div className="flex items-center gap-2 cursor-pointer w-fit p-2 rounded hover:bg-white/5 transition-colors">
                   <RadioGroupItem
                     value="job-description"
                     id="job-description"
-                    className="mb-2"
+                    className="border-white/20 text-primary"
                   />
                   <Label
                     htmlFor="job-description"
-                    className="cursor-pointer text-sm mb-1 sm:mb-0 sm:text-base text-black capitalize"
+                    className="cursor-pointer text-sm sm:text-base text-gray-200 capitalize"
                   >
                     Upload Job Description
                   </Label>
@@ -553,7 +550,7 @@ export function InterviewSetupForm({
 
               {formData.inputType === "skills-based" ? (
                 <div className="space-y-1 relative">
-                  <p className="text-xs mb-2 flex justify-between h-4 ml-1">
+                  <p className="text-xs mb-2 flex justify-between h-4 ml-1 text-gray-400">
                     (Enter 3 - 5 skills.)
                     {skill && (
                       <RemainingLength
@@ -571,29 +568,29 @@ export function InterviewSetupForm({
                     minLength={2}
                     maxLength={maxSkillLength}
                     onKeyDown={handleKeyDown}
-                    className="px-3 py-2 text-sm sm:text-base"
+                    className="px-3 py-2 text-sm sm:text-base bg-black/20 border-white/10 focus-visible:ring-primary/50 text-white placeholder:text-gray-600"
                     disabled={formData.skills.length >= maxNoOfSkills}
                   />
                   {skill.trim() && (
-                    <ul className="absolute z-10 w-full bg-white border rounded mt-1 shadow-md">
+                    <ul className="absolute z-50 w-full bg-[#1a1a2e] border border-white/10 rounded-lg mt-1 shadow-xl overflow-hidden">
                       <li
-                        className="px-3 py-2 text-sm hover:bg-gray-100 cursor-pointer"
+                        className="px-3 py-2 text-sm hover:bg-white/10 cursor-pointer text-gray-200 transition-colors"
                         onClick={() => handleAddSkill(skill)}
                       >
                         Add “{skill}”
                       </li>
                     </ul>
                   )}
-                  <div className="flex flex-wrap gap-2 mt-2">
+                  <div className="flex flex-wrap gap-2 mt-3">
                     {formData.skills.map((skill) => (
                       <Badge
                         key={skill}
                         variant="outline"
-                        className="flex items-center gap-2"
+                        className="flex items-center gap-2 bg-primary/10 border-primary/20 text-primary-foreground hover:bg-primary/20 transition-colors py-1 px-3"
                       >
                         {skill}
                         <p
-                          className="cursor-pointer"
+                          className="cursor-pointer hover:text-red-400"
                           onClick={() => removeSkill(skill)}
                         >
                           x
@@ -604,21 +601,20 @@ export function InterviewSetupForm({
 
                   {recommendedSkillsLoading ? (
                     <div className="py-4 w-full">
-                      <p className="cursor-pointer text-sm mb-1 sm:mb-0 sm:text-base font-medium ">
+                      <p className="cursor-pointer text-sm mb-1 sm:mb-0 sm:text-base font-medium text-gray-400">
                         Recommended Skills
                       </p>
-                      <div className="flex flex-wrap gap-2 mt-2">
-                        <Skeleton className="h-6 sm:h-7 w-1/2" />
-                        <Skeleton className="h-6 sm:h-7 w-1/3" />
-                        <Skeleton className="h-6 sm:h-7 w-1/5" />
-                        <Skeleton className="h-6 sm:h-7 w-1/2" />
-                        <Skeleton className="h-6 sm:h-7 w-1/4" />
+                      <div className="flex flex-wrap gap-2 mt-2 opacity-50">
+                        {/* Simple skeletons using divs for dark mode */}
+                        <div className="h-7 w-24 bg-white/10 rounded animate-pulse" />
+                        <div className="h-7 w-20 bg-white/10 rounded animate-pulse" />
+                        <div className="h-7 w-28 bg-white/10 rounded animate-pulse" />
                       </div>
                     </div>
                   ) : (
                     recommendedSkills.length > 0 && (
                       <div className="py-4">
-                        <p className="cursor-pointer text-sm mb-1 sm:mb-0 sm:text-base font-medium ">
+                        <p className="cursor-pointer text-sm mb-1 sm:mb-0 sm:text-base font-medium text-gray-400">
                           Recommended Skills
                         </p>
                         <div className="flex flex-wrap gap-2 mt-2">
@@ -626,7 +622,7 @@ export function InterviewSetupForm({
                             <Badge
                               key={skill}
                               variant="outline"
-                              className="flex items-center gap-2 cursor-pointer"
+                              className="flex items-center gap-2 cursor-pointer bg-white/5 border-white/10 text-gray-300 hover:bg-white/10 hover:text-white transition-all"
                               onClick={() => toggleSkills(skill)}
                             >
                               {skill}
@@ -647,10 +643,10 @@ export function InterviewSetupForm({
                     onChange={handleChange}
                     minLength={minJDLength}
                     maxLength={maxJDLength}
-                    className="min-h-[150px] max-h-[200px] text-sm sm:text-base p-2"
+                    className="min-h-[150px] max-h-[200px] text-sm sm:text-base p-2 bg-black/20 border-white/10 text-white placeholder:text-gray-600 focus-visible:ring-primary/50"
                     required
                   />
-                  <p className="text-xs mb-2 flex justify-between h-4 mt-1">
+                  <p className="text-xs mb-2 flex justify-between h-4 mt-1 text-gray-400">
                     ({`JD Should be between 99 - ${maxJDLength} letters.`})
                     {formData.jobDescription.trim() && (
                       <RemainingLength
@@ -665,7 +661,7 @@ export function InterviewSetupForm({
 
               <Button
                 onClick={handleStartInterview}
-                className="text-base font-bold cursor-pointer"
+                className="w-full text-base font-bold cursor-pointer bg-gradient-to-r from-blue-600 to-purple-600 hover:opacity-90 shadow-[0_0_20px_rgba(59,100,246,0.2)] transition-all"
                 disabled={
                   (formData.inputType === "skills-based" &&
                     formData.skills.length < 3) ||
