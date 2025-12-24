@@ -16,6 +16,14 @@ connectDB();
 app.use(cors({ origin: "*" }));
 app.use(express.json());
 
+app.get("/", (req, res) => {
+  res.send("NexusPrep Interview API is running!");
+});
+
+app.get("/health", (req, res) => {
+  res.status(200).json({ status: "ok", timestamp: new Date().toISOString() });
+});
+
 app.use("/api", interviewRoutes);
 app.use("/api", jobRoutes);
 

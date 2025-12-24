@@ -1,31 +1,43 @@
-import { OpenAI } from "openai"
+// import { OpenAI } from "openai"
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY! })
+// const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY! })
 
-export async function POST(req: Request) {
-  try {
-    const { text, voice = "nova", model = "tts-1" } = await req.json()
+// export async function POST(req: Request) {
+//   try {
+//     const { text, voice = "nova", model = "tts-1" } = await req.json()
 
-    if (!text) {
-      return Response.json({ error: "Text is required" }, { status: 400 })
-    }
+//     if (!text) {
+//       return Response.json({ error: "Text is required" }, { status: 400 })
+//     }
 
-    const response = await openai.audio.speech.create({
-      model,
-      voice,
-      input: text,
-    })
+//     const response = await openai.audio.speech.create({
+//       model,
+//       voice,
+//       input: text,
+//     })
 
-    const audioStream = await response.arrayBuffer()
+//     const audioStream = await response.arrayBuffer()
 
-    return new Response(audioStream, {
-      headers: {
-        "Content-Type": "audio/mpeg",
-        "Content-Length": audioStream.byteLength.toString(),
-      },
-    })
-  } catch (err) {
-    console.error("TTS error:", err)
-    return Response.json({ error: "Failed to synthesize speech" }, { status: 500 })
-  }
+//     return new Response(audioStream, {
+//       headers: {
+//         "Content-Type": "audio/mpeg",
+//         "Content-Length": audioStream.byteLength.toString(),
+//       },
+//     })
+//   } catch (err) {
+//     console.error("TTS error:", err)
+//     return Response.json({ error: "Failed to synthesize speech" }, { status: 500 })
+//   }
+// }
+
+import { NextResponse } from "next/server";
+
+export async function POST() {
+  return NextResponse.json(
+    {
+      message:
+        "Text-to-speech is disabled in the public demo. This feature is experimental.",
+    },
+    { status: 501 }
+  );
 }

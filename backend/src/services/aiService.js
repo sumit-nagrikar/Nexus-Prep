@@ -8,7 +8,7 @@ import {
   ChatPromptTemplate,
   MessagesPlaceholder,
 } from "@langchain/core/prompts";
-import { createModel, createEmbeddings } from "../config/openai.js";
+import { createModel, createEmbeddings } from "../config/llm.js";
 import {
   createIntroPrompt,
   createMainPrompt,

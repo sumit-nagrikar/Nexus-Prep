@@ -209,12 +209,33 @@ export class InterviewService {
   }
 
   async getTopSkills(domain, jobRole) {
+  const response = await this.aiService.generateRecommendedSkills(domain, jobRole);
+  const raw = response.content;
 
-    const recommendedSkills = await this.aiService.generateRecommendedSkills(
-      domain, jobRole
-    );
-    return Array.from(JSON.parse(recommendedSkills.content));
+  // 1. Try to extract JSON array safely
+  const arrayMatch = raw.match(/\[[\s\S]*?\]/);
+
+  if (arrayMatch) {
+    try {
+      return JSON.parse(arrayMatch[0]);
+    } catch (e) {
+      console.warn("JSON array parse failed, falling back:", e.message);
+    }
   }
+
+  // 2. Hard fallback (never break API)
+  console.warn("Using fallback skills due to invalid LLM output");
+
+  return [
+    "JavaScript",
+    "Node.js",
+    "Express.js",
+    "MongoDB",
+    "REST APIs",
+    "Git",
+  ];
+}
+
 
   async reviseAnswer(sessionId) {
     const session = await InterviewSession.findById(sessionId);
