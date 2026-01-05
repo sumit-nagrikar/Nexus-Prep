@@ -51,7 +51,7 @@ export const startInterviewSchema = Joi.object({
 });
 
 export const postAnswerSchema = Joi.object({
-  answer: Joi.string().min(140).max(1500).required(),
+  answer: Joi.string().min(14).max(1500).required(),
 });
 
 export const sessionIdParamSchema = Joi.object({

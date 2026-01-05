@@ -11,7 +11,7 @@ import { Textarea } from "./ui/textarea";
 import { Pause, Loader, Mic } from "lucide-react";
 
 const maxAnswerLength = 1499;
-const minAnswerLength = 140;
+const minAnswerLength = 10;
 
 const answerProgressColor = (length: number) => {
   if (length < minAnswerLength) {

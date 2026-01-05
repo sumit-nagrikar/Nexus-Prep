@@ -3,22 +3,21 @@ import {
   MessagesPlaceholder,
 } from "@langchain/core/prompts";
 
-const femaleNames = [
-  "Priya Sharma",
-  "Aishwarya Nair",
-  "Sneha Patil",
-  "Ritika Deshmukh",
-  "Kavya Joshi",
-  "Ishita Mehra",
-  "Ananya Rane",
-  "Pooja Kulkarni",
-  "Divya Iyer",
-  "Meenal Waghmare",
+const maleNames = [
+  "Alex",
+  "Ben",
+  "Charlie",
+  "David",
+  "Ethan",
+  "Frank",
+  "George",
+  "Harry",
+  "Ian",
+  "Jack",
 ];
 
 const getRandomName = () =>
-  femaleNames[Math.floor(Math.random() * femaleNames.length)];
-
+  maleNames[Math.floor(Math.random() * maleNames.length)];
 export const createIntroPrompt = ({
   interviewType,
   domain,

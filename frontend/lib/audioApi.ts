@@ -1,55 +1,28 @@
 import { useInterviewStore } from "./store/interviewStore";
-import { generateSpeech } from "@/services/text-to-speech";
 
-export const speakTextWithTTS = async (text: string) => {
+export const speakTextWithTTS = (text: string) => {
+  if (typeof window === "undefined") return;
+  if (!("speechSynthesis" in window)) return;
+
   const store = useInterviewStore.getState();
+
+  // Stop any ongoing speech
+  speechSynthesis.cancel();
+
   store.setIsAISpeaking(true);
 
-  if (store.ttsAbortController) {
-    store.ttsAbortController.abort();
-  }
+  const utterance = new SpeechSynthesisUtterance(text);
 
-  const controller = new AbortController();
-  store.setTTSAbortController(controller);
+  // Optional tuning
+  utterance.rate = 1;
+  utterance.pitch = 1;
 
-  try {
-    const audioData = await generateSpeech({ text }, controller.signal);
+  store.setBrowserUtterance(utterance);
 
-    if (controller.signal.aborted) return;
-
-    const audio = new Audio(URL.createObjectURL(new Blob([audioData])));
-    store.setAudioInstance(audio);
-
-    audio.onended = () => {
-      store.setIsAISpeaking(false);
-      store.setAudioInstance(null);
-      store.setTTSAbortController(null);
-    };
-
-    audio.play();
-  } catch (error) {
-    if ((error as Error).name === "AbortError") {
-      console.log("TTS fetch aborted");
-    } else {
-      console.error("Error with TTS:", error);
-      speakTextWithBrowser(text);
-    }
+  utterance.onend = () => {
     store.setIsAISpeaking(false);
-    store.setTTSAbortController(null);
-  }
-};
+    store.setBrowserUtterance(null);
+  };
 
-const speakTextWithBrowser = (text: string) => {
-  if ("speechSynthesis" in window) {
-    const utterance = new SpeechSynthesisUtterance(text);
-    useInterviewStore.getState().setIsAISpeaking(true);
-    useInterviewStore.getState().setBrowserUtterance(utterance);
-
-    utterance.onend = () => {
-      useInterviewStore.getState().setIsAISpeaking(false);
-      useInterviewStore.getState().setBrowserUtterance(null);
-    };
-
-    speechSynthesis.speak(utterance);
-  }
+  speechSynthesis.speak(utterance);
 };
