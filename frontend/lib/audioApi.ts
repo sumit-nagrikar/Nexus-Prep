@@ -1,28 +1,44 @@
 import { useInterviewStore } from "./store/interviewStore";
 
-export const speakTextWithTTS = (text: string) => {
-  if (typeof window === "undefined") return;
-  if (!("speechSynthesis" in window)) return;
+export const speakTextWithTTS = (text: string): Promise<void> => {
+  return new Promise((resolve) => {
+    if (typeof window === "undefined") {
+      resolve();
+      return;
+    }
 
-  const store = useInterviewStore.getState();
+    if (!("speechSynthesis" in window)) {
+      resolve();
+      return;
+    }
 
-  // Stop any ongoing speech
-  speechSynthesis.cancel();
+    const store = useInterviewStore.getState();
 
-  store.setIsAISpeaking(true);
+    // Stop any ongoing speech
+    speechSynthesis.cancel();
 
-  const utterance = new SpeechSynthesisUtterance(text);
+    store.setIsAISpeaking(true);
 
-  // Optional tuning
-  utterance.rate = 1;
-  utterance.pitch = 1;
+    const utterance = new SpeechSynthesisUtterance(text);
 
-  store.setBrowserUtterance(utterance);
+    // Optional tuning
+    utterance.rate = 1;
+    utterance.pitch = 1;
 
-  utterance.onend = () => {
-    store.setIsAISpeaking(false);
-    store.setBrowserUtterance(null);
-  };
+    store.setBrowserUtterance(utterance);
 
-  speechSynthesis.speak(utterance);
+    utterance.onend = () => {
+      store.setIsAISpeaking(false);
+      store.setBrowserUtterance(null);
+      resolve();
+    };
+
+    utterance.onerror = () => {
+      store.setIsAISpeaking(false);
+      store.setBrowserUtterance(null);
+      resolve();
+    };
+
+    speechSynthesis.speak(utterance);
+  });
 };
