@@ -41,12 +41,11 @@ export default function LandingPage() {
         }
       }
 
-      const response = await fetch("http://localhost:5051/api/interviews", {
+      const response = await fetch("https://nexus-prep-server.onrender.com/api/interviews", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(backendData),
       });
-
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || "Failed to start interview");

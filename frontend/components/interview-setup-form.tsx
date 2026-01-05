@@ -618,7 +618,7 @@ export function InterviewSetupForm({
                           Recommended Skills
                         </p>
                         <div className="flex flex-wrap gap-2 mt-2">
-                          {recommendedSkills.map((skill) => (
+                          {recommendedSkills.slice(0, 6).map((skill) => (
                             <Badge
                               key={skill}
                               variant="outline"
